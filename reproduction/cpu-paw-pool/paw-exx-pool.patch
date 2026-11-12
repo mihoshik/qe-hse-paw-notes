@@ -1,0 +1,51 @@
+diff --git a/PW/src/paw_exx.f90 b/PW/src/paw_exx.f90
+--- a/PW/src/paw_exx.f90
++++ b/PW/src/paw_exx.f90
+@@ -36,7 +36,7 @@
+     USE uspp,           ONLY : nkb
+     USE paw_variables,  ONLY : okpaw
+     USE uspp,           ONLY : ofsbeta
+-    USE io_global,      ONLY : ionode, ionode_id
++    USE mp_exx,         ONLY : me_egrp, root_egrp
+     !
+     IMPLICIT NONE
+     !
+@@ -59,8 +59,9 @@
+     !
+     CALL start_clock( 'PAW_newdxx' )
+     !
+-    ! Worst possible parallelisation:
+-    IF(ionode) THEN
++    ! One replicated projector contraction per EXX group, in EVERY k-point pool.
++    ! Callers sum distributed G-space and this one-center term in intra_egrp_comm.
++    IF(me_egrp == root_egrp) THEN
+       !
+       DO np = 1, ntyp
+       ONLY_FOR_PAW : &
+@@ -112,7 +113,7 @@
+     USE ions_base,          ONLY : nat, ityp, ntyp => nsp
+     USE uspp_param,         ONLY : nh, upf
+     USE uspp,               ONLY : nkb, ofsbeta
+-    USE io_global,          ONLY : ionode
++    USE mp_exx,             ONLY : me_egrp, root_egrp
+     !
+     IMPLICIT NONE
+     !
+@@ -134,7 +135,7 @@
+     CALL start_clock("PAW_xx_nrg")
+     !
+     PAW_xx_energy = 0._dp
+-    IF(ionode) THEN
++    IF(me_egrp == root_egrp) THEN
+     !
+     DO np = 1, ntyp
+       ONLY_FOR_PAW : &
+@@ -167,7 +168,7 @@
+       ONLY_FOR_PAW 
+     ENDDO
+ 
+-    ENDIF !ionode
++    ENDIF ! EXX group root
+     !CALL mp_sum(PAW_xx_energy)
+     !
+     CALL stop_clock("PAW_xx_nrg")

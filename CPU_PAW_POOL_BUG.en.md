@@ -82,7 +82,9 @@ The missing term affects the Hamiltonian as well as energy evaluation. Its magni
 
 At the time of this 2026-11-12 record, the repaired production k6/q6 final comparison had not completed.
 
-## 6. Executable identities and implementation references
+## 6. Reproduction and executable identity
+
+The [reproduction guide](reproduction/cpu-paw-pool/README.md) includes the repair-only patch, PBE and HSE inputs, run script, and the converged logs from the stock and fixed binaries with one and two pools.
 
 | Identity | SHA-256 |
 | --- | --- |

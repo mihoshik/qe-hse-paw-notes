@@ -46,7 +46,7 @@ Three alternating-order first-`aceinit` comparisons used 32 MPI ranks, two pools
 | 3 | 5.44 s | 1.35 s |
 | Median | **5.42 s** | **1.36 s** |
 
-The median ratio is **approximately 3.99× for EXX construction as a whole**, including the augmentation. It is neither the isolated `addusxx/newdxx` speedup nor the total-SCF speedup.
+The median speedup is **approximately 3.99× for QE's `aceinit` wall time in the first EXX cycle**. The timer covers exchange-operator application and ACE construction for each k point. Initialization in `exxinit`, wavefunction reads and projector preparation, and the inter-pool reduction after the k-point loop fall outside this measurement.
 
 A separate synthetic component benchmark on one CPU core used 47109 G vectors, six q scenarios, and three repetitions:
 
@@ -56,7 +56,7 @@ A separate synthetic component benchmark on one CPU core used 47109 G vectors, s
 | 7 | 0.71125 s | 0.07717 s | 9.22× |
 | 20 | 1.98375 s | 0.12407 s | 15.99× |
 
-The current band block is seven. The approximately 9.2× component result and approximately 4× 32-rank result have different scopes and conditions. The synthetic fixture included nonzero initial arrays, complex data, changing q values, and partial band blocks. Maximum add/new array differences were approximately 7.02×10⁻¹⁶ and 1.41×10⁻¹², respectively.
+The 32-rank timing used a band block of seven. The synthetic benchmark measured each implementation three times per q scenario. Batch sizes 1, 7, and 20 used two, three, and one q scenarios, respectively. Each speedup compares the two implementations' median times over the same scenarios within that row. The approximately 9.2× component result and approximately 4× 32-rank result have different scopes and conditions. The synthetic fixture included nonzero initial arrays, complex data, changing q values, and partial band blocks. Maximum add/new array differences were approximately 7.02×10⁻¹⁶ and 1.41×10⁻¹², respectively.
 
 ## 4. Converged-energy checks
 
@@ -69,7 +69,7 @@ The following HSE runs used identical k2/q1 input and copied PBE seeds, with 32 
 
 Both runs reached EXX self-consistency and `JOB DONE`, agreeing to the printed eight decimal places. Array validation covered every active batch/q.
 
-Energy printed by timing-only runs with `exx_maxstep=1` is the common initial PBE seed energy. HSE numerical agreement is established by the separate converged runs above. Validation deliberately executes the stock reference work as well, so validation-enabled full-SCF times are not used as performance speedup factors.
+The last total energy printed in the `exx_maxstep=1` timing runs comes from the semilocal SCF before EXX construction. In these tests it matched the common PBE initialization energy to the printed precision. HSE numerical agreement is established by the separate converged runs above. Validation deliberately executes the stock reference work as well, so validation-enabled full-SCF times are not used as performance speedup factors.
 
 ## 5. Per-k time in production-size logs
 
@@ -80,7 +80,7 @@ Production-size logs on the same CPU node were also examined. Time per k point i
 | 0 | approximately 19 min 24 s/k | approximately 4 min 51 s/k | approximately 3.99× |
 | 1 | approximately 18 min 32 s/k | approximately 4 min 51 s/k | approximately 3.82× |
 
-Both runs used 32 MPI ranks, two pools, k6/q6, 20 bands, and 80/400 Ry cutoffs. The previous case had −1% x-axis strain and 64 k points in total (32/pool); the current reference has 40 (20/pool). EXX G-vector counts also differ: 46521 versus 47005.
+Both runs used 32 MPI ranks, two pools, k6/q6, 20 bands, and 80/400 Ry cutoffs. The previous case had −1% normal strain along the crystal [100] direction and 64 k points in total (32/pool); the current reference has 40 (20/pool). EXX G-vector counts also differ: 46521 versus 47005.
 
 The previous averages cover 32 completed points per pool, while the current averages cover the first six. The observed per-k reduction is approximately 3.8–4.0×, but this is **an observational comparison of different structures**, separate from the controlled same-input benchmark. It must not be treated as a measured speedup for every EXX cycle or the complete converged SCF.
 

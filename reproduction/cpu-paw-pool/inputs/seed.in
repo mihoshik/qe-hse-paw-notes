@@ -1,0 +1,32 @@
+&CONTROL
+ calculation='scf', prefix='SnO_HSE', outdir='./scratch',
+ restart_mode='from_scratch', pseudo_dir='../pseudo',
+ disk_io='medium', verbosity='high',
+/
+&SYSTEM
+ ibrav=6, A=3.801, C=4.984, nat=4, ntyp=2, nbnd=20,
+ input_dft='PBE', exx_fraction=0.25, screening_parameter=0.106,
+ nqx1=1, nqx2=1, nqx3=1, ace=.true.,
+ ecutwfc=80, ecutrho=400,
+ occupations='fixed', nspin=1,
+ nosym=.false., noinv=.false.,
+ exxdiv_treatment='gygi-baldereschi', x_gamma_extrapolation=.true.,
+/
+&ELECTRONS
+ diago_full_acc=.true., 
+ conv_thr=1d-9, electron_maxstep=400, exx_maxstep=100,
+ scf_must_converge=.false.,
+ adaptive_thr=.true., conv_thr_init=1d-3, conv_thr_multi=0.1,
+ mixing_beta=0.03, diagonalization='david',
+ startingpot='atomic', startingwfc='atomic+random',
+/
+ATOMIC_SPECIES
+Sn 118.710 Sn.pbe-dn-kjpaw_psl.1.0.0.UPF
+O   15.999 O.pbe-n-kjpaw_psl.1.0.0.UPF
+ATOMIC_POSITIONS crystal
+Sn 0.25 0.25 0.231
+Sn 0.75 0.75 0.769
+O  0.75 0.25 0.0000
+O  0.25 0.75 0.0000
+K_POINTS automatic
+2 1 1 0 0 0

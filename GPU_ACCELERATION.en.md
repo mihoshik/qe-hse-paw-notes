@@ -46,7 +46,7 @@ The stock GPU execution mixed GPU work, such as FFT-related operations, with exc
 
 - Batch projector coefficients and corrections over bands using cuBLAS `ZGEMM`.
 - Use triangular symmetric projector-pair indexing.
-- Reuse q-dependent phases and workspaces.
+- Reuse q-independent phase factors and work arrays. At each q, upload the augmentation array and prepare the phase, then reuse them across band blocks at that q.
 - Evaluate the corresponding PAW one-center term through density-matrix contractions and operations including `ZGEMV` on the GPU.
 - Keep large correction arrays on the GPU and reduce correction-related round trips.
 
@@ -69,7 +69,7 @@ Separate validation-disabled first-construction tests reported `aceinit` times o
 
 The GPU prototype's array validator compared only the first 12 relevant calls per process against the stock CPU routines. Reported maximum differences were approximately 1.34×10⁻¹⁵ on the RTX 3090 and 1.18×10⁻¹⁵ on the RTX 2080 Ti. Reprinting those cumulative maxima later does not certify every subsequent q point or EXX cycle.
 
-**These are small-mesh results. They do not establish final agreement or identical speedups for the production k6/q6 calculation.**
+**The reported speedups and numerical agreement apply to the small mesh. Final agreement at production k6/q6 is outside the validation scope of this note.** A synthetic nonzero-q fixture checks the US projector path. The real-SnO check including the PAW one-center term used k1/q1 with one MPI rank and one pool.
 
 ## 4. Reproducibility and implementation scope
 
