@@ -10,7 +10,7 @@
 | CPUの不具合修正：pool数でPAW交換項が欠落する原因と数値照合 | [CPUのPAW補正欠落](CPU_PAW_POOL_BUG.ja.md) |
 | CPUの高速化：一括演算への変更、速度試験、k点あたりの時間 | [CPU高速化](CPU_ACCELERATION.ja.md) |
 
-各資料に前提、変更内容、測定結果、検証範囲を記載しています。CPUのPAW修正は、[追試手順](reproduction/cpu-paw-pool/README.md)からパッチ、入力、実行スクリプト、4本の実測ログを参照できます。
+各資料に前提、変更内容、測定結果、検証範囲を記載しています。CPUのPAW修正は、[追試手順](reproduction/cpu-paw-pool/README.md)からパッチ、入力、実行スクリプト、4本の実測ログを参照できます。CPUの一括演算と幅20への変更は、[CPU高速化パッチと適用手順](reproduction/cpu-paw-batch/README.md)に収録しています。
 
 ## English
 
@@ -20,4 +20,4 @@
 | CPU correctness repair: missing PAW exchange terms in additional pools | [CPU PAW pool omission](CPU_PAW_POOL_BUG.en.md) |
 | CPU acceleration: batching, timing tests, and time per k point | [CPU acceleration](CPU_ACCELERATION.en.md) |
 
-Each document states its assumptions, implementation changes, measurements, and validation scope. The [CPU PAW reproduction guide](reproduction/cpu-paw-pool/README.md) includes the patch, inputs, run script, and all four recorded SCF logs.
+Each document states its assumptions, implementation changes, measurements, and validation scope. The [CPU PAW reproduction guide](reproduction/cpu-paw-pool/README.md) includes the patch, inputs, run script, and all four recorded SCF logs. The [CPU batching patches and application guide](reproduction/cpu-paw-batch/README.md) include the measured batched implementation and the additional width20 change.

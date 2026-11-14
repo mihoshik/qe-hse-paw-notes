@@ -98,3 +98,8 @@ Validation was disabled for performance measurements. The optimized scope is col
 | Baseline PAW-repair-only CPU executable | `372f5729aed56294c06b5440a5878967370e275e7c7a5ef259646c17ddf6f677` |
 | PAW-repair-plus-batching CPU executable | `6454fb141032deea948867e2234745e3ab65441d0eba97eac6a76da6e323d7eb` |
 | k2/q1 converged comparison input | `941e55bd1b737734a5318c9ef3319eb2dd63f9b5d973abb34e7eb63a4fb7e79c` |
+
+## Published source patches, 2026-11-14
+
+The measured CPU batching source, Make integration, and additional width20 change used by the current CPU configuration are available with application instructions, source SHA-256 values, and the existing width20 numerical and timing evidence. [CPU batching patches and application guide](reproduction/cpu-paw-batch/README.md)
+

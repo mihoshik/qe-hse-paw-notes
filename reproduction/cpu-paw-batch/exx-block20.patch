@@ -1,0 +1,13 @@
+diff --git a/Modules/mp_exx.f90 b/Modules/mp_exx.f90
+--- a/Modules/mp_exx.f90
++++ b/Modules/mp_exx.f90
+@@ -178,8 +178,7 @@
+     INTEGER :: n_underloaded ! number of band groups that are under max load
+     INTEGER :: pair_bands(nbnd,nbnd)
+ 
+-    jblock = 7
+-
++    jblock = 20
+     max_ibands = CEILING(DBLE(nbnd)/DBLE(negrp))+2
+     IF (negrp == 1) max_ibands = nbnd
+ 

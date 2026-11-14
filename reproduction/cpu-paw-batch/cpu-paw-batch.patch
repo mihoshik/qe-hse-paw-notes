@@ -1,0 +1,267 @@
+diff --git a/PW/src/exx_paw_cpu_batch.f90 b/PW/src/exx_paw_cpu_batch.f90
+new file mode 100644
+--- /dev/null
++++ b/PW/src/exx_paw_cpu_batch.f90
+@@ -0,0 +1,170 @@
++! Experimental CPU US/PAW reciprocal-space augmentation, GPL as QE 7.6.
++! Same equations and DP precision as us_exx; triangular projector pairs,
++! BLAS-3 over the existing jblock, and phase/workspace reuse within one vexx.
++! The separate PAW one-center term stays in the repaired paw_exx module.
++MODULE exx_paw_cpu_batch
++  USE kinds, ONLY : DP
++  USE fft_types, ONLY : fft_type_descriptor
++  USE ions_base, ONLY : nat,nsp,ityp,tau
++  USE uspp, ONLY : nkb,ofsbeta,ijtoh
++  USE uspp_param, ONLY : nh,upf
++  USE gvect, ONLY : mill,eigts1,eigts2,eigts3
++  USE constants, ONLY : tpi
++  USE cell_base, ONLY : omega
++  USE io_global, ONLY : ionode,stdout
++  USE us_exx, ONLY : qgm,nij_type,addusxx_g,newdxx_g
++  IMPLICIT NONE
++  PRIVATE
++  PUBLIC :: paw_cpu_enabled,paw_cpu_init,paw_cpu_q,paw_cpu_add,paw_cpu_new,paw_cpu_finish
++  COMPLEX(DP), PARAMETER :: ONE=(1._DP,0._DP),ZERO=(0._DP,0._DP)
++  INTEGER :: ng,nijmax,checks_add=0,checks_new=0
++  LOGICAL :: validate=.false.,announced=.false.
++  REAL(DP) :: qleft(3),qright(3),max_add_error=0._DP,max_new_error=0._DP
++  COMPLEX(DP), ALLOCATABLE :: phase0(:,:),phase(:,:),coeff(:,:),work(:,:)
++CONTAINS
++  LOGICAL FUNCTION paw_cpu_enabled()
++    CHARACTER(32) :: flag
++    INTEGER :: status
++    CALL get_environment_variable('QE_PAW_CPU_BATCH',flag,status=status)
++    paw_cpu_enabled = .true.
++    IF (status==0) paw_cpu_enabled = TRIM(flag)/='0'
++  END FUNCTION
++
++  SUBROUTINE paw_cpu_init(grid,bands)
++    TYPE(fft_type_descriptor), INTENT(IN) :: grid
++    INTEGER, INTENT(IN) :: bands
++    INTEGER :: na,ig,status
++    CHARACTER(32) :: flag
++    IF (ALLOCATED(phase)) CALL errore('paw_cpu_init','workspace already active',1)
++    ng=grid%ngm; nijmax=MAX(1,MAXVAL(nh*(nh+1)/2))
++    ALLOCATE(phase0(ng,nat),phase(ng,nat),coeff(nijmax,bands),work(MAX(1,ng),bands))
++    DO na=1,nat
++      DO ig=1,ng
++        phase0(ig,na)=eigts1(mill(1,ig),na)*eigts2(mill(2,ig),na)*eigts3(mill(3,ig),na)
++      ENDDO
++    ENDDO
++    CALL get_environment_variable('QE_PAW_CPU_VALIDATE',flag,status=status)
++    validate=status==0 .AND. TRIM(flag)=='1'
++    ! Validation covers EVERY batch/q of this invocation, not a process-lifetime sample.
++    checks_add=0;checks_new=0;max_add_error=0._DP;max_new_error=0._DP
++    IF (.NOT.announced .AND. ionode) THEN
++      WRITE(stdout,'(A,L1)') '     Experimental CPU batched augmentation ACTIVE; validation=',validate
++      announced=.true.
++    ENDIF
++  END SUBROUTINE
++
++  SUBROUTINE paw_cpu_q(left,right)
++    REAL(DP), INTENT(IN) :: left(3),right(3)
++    REAL(DP) :: arg
++    COMPLEX(DP) :: z
++    INTEGER :: na
++    qleft=left;qright=right
++    DO na=1,nat
++      arg=tpi*SUM((right-left)*tau(:,na))
++      z=CMPLX(COS(arg),-SIN(arg),DP)
++      phase(:,na)=z*phase0(:,na)
++    ENDDO
++  END SUBROUTINE
++
++  SUBROUTINE paw_cpu_add(grid,rho,bands,phi,psi)
++    TYPE(fft_type_descriptor), INTENT(IN) :: grid
++    INTEGER, INTENT(IN) :: bands
++    COMPLEX(DP), INTENT(INOUT) :: rho(:,:)
++    COMPLEX(DP), INTENT(IN) :: phi(nkb,bands),psi(nkb)
++    INTEGER :: na,nt,h,off,nij,qoff,p,b,ig,i,j
++    COMPLEX(DP) :: z
++    COMPLEX(DP), ALLOCATABLE :: reference(:,:)
++    REAL(DP) :: err
++    CALL start_clock('aug_cpu_add')
++    IF (validate) THEN
++      ALLOCATE(reference(grid%nnr,bands));reference=rho(:,1:bands)
++    ENDIF
++    IF (ng>0) THEN
++      DO na=1,nat
++        nt=ityp(na)
++        IF (.NOT.upf(nt)%tvanp) CYCLE
++        h=nh(nt);off=ofsbeta(na);nij=h*(h+1)/2;qoff=nij_type(nt)
++        DO b=1,bands
++          p=0
++          DO i=1,h
++            DO j=i,h
++              p=p+1
++              z=CONJG(phi(off+i,b))*psi(off+j)
++              IF (i/=j) z=z+CONJG(phi(off+j,b))*psi(off+i)
++              coeff(p,b)=z
++            ENDDO
++          ENDDO
++        ENDDO
++        CALL ZGEMM('N','N',ng,bands,nij,ONE,qgm(1,qoff+1),ng,coeff,nijmax,ZERO,work,MAX(1,ng))
++        DO b=1,bands
++          DO ig=1,ng
++            rho(grid%nl(ig),b)=rho(grid%nl(ig),b)+phase(ig,na)*work(ig,b)
++          ENDDO
++        ENDDO
++      ENDDO
++    ENDIF
++    IF (validate) THEN
++      DO b=1,bands
++        CALL addusxx_g(grid,reference(:,b),qleft,qright,'c',becphi_c=phi(:,b),becpsi_c=psi)
++      ENDDO
++      err=MAXVAL(ABS(rho(:,1:bands)-reference));max_add_error=MAX(max_add_error,err)
++      IF (err>5.e-11_DP*(1._DP+MAXVAL(ABS(reference)))) CALL errore('paw_cpu_add','stock/batch mismatch',1)
++      checks_add=checks_add+1;DEALLOCATE(reference)
++    ENDIF
++    CALL stop_clock('aug_cpu_add')
++  END SUBROUTINE
++
++  SUBROUTINE paw_cpu_new(grid,vc,bands,phi,deexx)
++    TYPE(fft_type_descriptor), INTENT(IN) :: grid
++    INTEGER, INTENT(IN) :: bands
++    COMPLEX(DP), INTENT(IN) :: vc(:,:),phi(nkb,bands)
++    COMPLEX(DP), INTENT(INOUT) :: deexx(nkb)
++    INTEGER :: na,nt,h,off,nij,qoff,ig,b,i,j,p
++    COMPLEX(DP) :: z
++    COMPLEX(DP), ALLOCATABLE :: reference(:)
++    REAL(DP) :: err
++    CALL start_clock('aug_cpu_new')
++    IF (validate) THEN
++      ALLOCATE(reference(nkb));reference=deexx
++    ENDIF
++    IF (ng>0) THEN
++      DO na=1,nat
++        nt=ityp(na)
++        IF (.NOT.upf(nt)%tvanp) CYCLE
++        h=nh(nt);off=ofsbeta(na);nij=h*(h+1)/2;qoff=nij_type(nt)
++        DO b=1,bands
++          DO ig=1,ng
++            work(ig,b)=vc(grid%nl(ig),b)*CONJG(phase(ig,na))
++          ENDDO
++        ENDDO
++        CALL ZGEMM('C','N',nij,bands,ng,CMPLX(omega,0._DP,DP),qgm(1,qoff+1),ng, &
++                   work,MAX(1,ng),ZERO,coeff,nijmax)
++        DO i=1,h
++          z=ZERO
++          DO b=1,bands
++            DO j=1,h
++              p=ijtoh(i,j,nt)
++              z=z+phi(off+j,b)*coeff(p,b)
++            ENDDO
++          ENDDO
++          deexx(off+i)=deexx(off+i)+z
++        ENDDO
++      ENDDO
++    ENDIF
++    IF (validate) THEN
++      DO b=1,bands
++        CALL newdxx_g(grid,vc(:,b),qleft,qright,'c',reference,becphi_c=phi(:,b))
++      ENDDO
++      err=MAXVAL(ABS(deexx-reference));max_new_error=MAX(max_new_error,err)
++      IF (err>5.e-11_DP*(1._DP+MAXVAL(ABS(reference)))) CALL errore('paw_cpu_new','stock/batch mismatch',1)
++      checks_new=checks_new+1;DEALLOCATE(reference)
++    ENDIF
++    CALL stop_clock('aug_cpu_new')
++  END SUBROUTINE
++
++  SUBROUTINE paw_cpu_finish()
++    IF (validate .AND. ionode) WRITE(stdout,'(A,2I8,2ES16.7)') &
++      '     CPU batch validation counts/errors: ',checks_add,checks_new,max_add_error,max_new_error
++    DEALLOCATE(phase0,phase,coeff,work)
++  END SUBROUTINE
++END MODULE
+diff --git a/PW/src/exx_bp.f90 b/PW/src/exx_bp.f90
+--- a/PW/src/exx_bp.f90
++++ b/PW/src/exx_bp.f90
+@@ -1359,6 +1359,8 @@
+     USE exx_base,       ONLY : nqs, xkq_collect, index_xkq, index_xk
+     USE exx_bp_utils,   ONLY : result_sum, igk_exx
+     USE io_global,      ONLY : stdout
++    USE exx_paw_cpu_batch, ONLY : paw_cpu_enabled, paw_cpu_init, paw_cpu_q, &
++                                 paw_cpu_add, paw_cpu_new, paw_cpu_finish
+     !
+     !
+     IMPLICIT NONE
+@@ -1414,7 +1416,9 @@
+     INTEGER :: ialloc, ending_im
+     INTEGER :: ijt, njt, jblock_start, jblock_end
+     INTEGER :: iegrp, wegrp
+-    !
++    LOGICAL :: paw_cpu_active
++    !
++    paw_cpu_active = okvan .AND. .NOT.noncolin .AND. .NOT.tqr .AND. paw_cpu_enabled()
+     ialloc = nibands(my_egrp_id+1)
+     !
+     ALLOCATE( fac(dfftt%ngm) )
+@@ -1520,6 +1524,10 @@
+        ENDDO
+        !
+        IF ( okvan .AND..NOT.tqr ) CALL qvan_init( dfftt%ngm, xkq, xkp )
++       IF (paw_cpu_active) THEN
++          IF (iq==1) CALL paw_cpu_init(dfftt,jblock)
++          CALL paw_cpu_q(xkq,xkp)
++       ENDIF
+        !
+        DO iegrp = 1, negrp
+           !
+@@ -1608,10 +1616,14 @@
+                 !
+                 !   ... add augmentation in G space HERE
+                 IF (okvan .AND. .NOT. tqr) THEN
++                   IF (paw_cpu_active) THEN
++                      CALL paw_cpu_add(dfftt,rhoc,jcount,becxx(ikq)%k(:,jstart:jend),becpsi%k(:,ibnd))
++                   ELSE
+                    DO jbnd = jstart, jend
+                       CALL addusxx_g( dfftt, rhoc(:,jbnd-jstart+1), xkq, xkp, &
+                       'c', becphi_c=becxx(ikq)%k(:,jbnd),becpsi_c=becpsi%k(:,ibnd) )
+                    ENDDO
++                   ENDIF
+                 ENDIF
+                 !   ... charge done
+                 !
+@@ -1634,10 +1646,14 @@
+                 ! Add ultrasoft contribution (RECIPROCAL SPACE)
+                 ! compute alpha_I,j,k+q = \sum_J \int <beta_J|phi_j,k+q> V_i,j,k,q Q_I,J(r) d3r
+                 IF (okvan .AND. .NOT. tqr) THEN
++                   IF (paw_cpu_active) THEN
++                      CALL paw_cpu_new(dfftt,vc,jcount,becxx(ikq)%k(:,jstart:jend),deexx(:,ii))
++                   ELSE
+                    DO jbnd=jstart, jend
+                       CALL newdxx_g( dfftt, vc(:,jbnd-jstart+1), xkq, xkp, 'c',&
+                                      deexx(:,ii), becphi_c=becxx(ikq)%k(:,jbnd) )
+                    ENDDO
++                   ENDIF
+                 ENDIF
+                 !
+                 !brings back v in real space
+@@ -1747,6 +1763,7 @@
+        !
+     ENDDO
+     !
++    IF (paw_cpu_active) CALL paw_cpu_finish()
+     !deallocate temporary arrays
+     DEALLOCATE( rhoc, vc )
+     !
+diff --git a/PW/src/Makefile b/PW/src/Makefile
+--- a/PW/src/Makefile
++++ b/PW/src/Makefile
+@@ -84,6 +84,7 @@
+ exx.o \
+ exx_std.o \
+ exx_bp_utils.o \
++exx_paw_cpu_batch.o \
+ exx_bp.o \
+ fcp_capacitance.o \
+ fcp_dyn_calcavg.o \
+@@ -309,4 +310,8 @@
+ clean :
+ 	- /bin/rm -f *.x *.o *.a *~ *_tmp.f90 *.d *.mod *.i *.L
+ 
++# CPU augmentation module and its consumer must compile in this order.
++exx_paw_cpu_batch.o: us_exx.o
++exx_bp.o: exx_paw_cpu_batch.o
++
+ include make.depend

@@ -1,0 +1,219 @@
+{
+  "recorded_JST": "2026-11-12",
+  "publication_JST": "2026-11-14",
+  "system": "Tetragonal SnO, four atoms, HSE with PBE-generated PAW, 40 electrons, nbnd=20",
+  "precision": "Double precision; final energy equality at printed 1e-8 Ry precision",
+  "small_SCF": {
+    "k_mesh": [
+      2,
+      1,
+      1
+    ],
+    "q_mesh": [
+      1,
+      1,
+      1
+    ],
+    "runs": {
+      "fixed_full_p1": {
+        "returncode": 0,
+        "energy_ry": -808.90861004,
+        "job_done": true,
+        "exx_converged": true,
+        "mpi_ranks": 32,
+        "pools": 1,
+        "variant": "fixed",
+        "validate": false,
+        "profiles": {
+          "aceinit": {
+            "cpu_seconds": 52.63,
+            "wall_seconds": 52.77
+          },
+          "addusxx": {
+            "cpu_seconds": 22.54,
+            "wall_seconds": 22.59
+          },
+          "newdxx": {
+            "cpu_seconds": 21.39,
+            "wall_seconds": 21.42
+          },
+          "PAW_newdxx": {
+            "cpu_seconds": 4.59,
+            "wall_seconds": 4.6
+          },
+          "PWSCF": {
+            "cpu_seconds": 71.72,
+            "wall_seconds": 73.82
+          }
+        },
+        "input_sha256": "941e55bd1b737734a5318c9ef3319eb2dd63f9b5d973abb34e7eb63a4fb7e79c",
+        "binary_sha256": "372f5729aed56294c06b5440a5878967370e275e7c7a5ef259646c17ddf6f677",
+        "validation_lines": []
+      },
+      "fixed_full_p2": {
+        "returncode": 0,
+        "energy_ry": -808.90861004,
+        "job_done": true,
+        "exx_converged": true,
+        "mpi_ranks": 32,
+        "pools": 2,
+        "variant": "fixed",
+        "validate": false,
+        "profiles": {
+          "aceinit": {
+            "cpu_seconds": 48.83,
+            "wall_seconds": 48.97
+          },
+          "addusxx": {
+            "cpu_seconds": 22.38,
+            "wall_seconds": 22.4
+          },
+          "newdxx": {
+            "cpu_seconds": 21.52,
+            "wall_seconds": 21.53
+          },
+          "PAW_newdxx": {
+            "cpu_seconds": 2.31,
+            "wall_seconds": 2.32
+          },
+          "PWSCF": {
+            "cpu_seconds": 66.44,
+            "wall_seconds": 68.21000000000001
+          }
+        },
+        "input_sha256": "941e55bd1b737734a5318c9ef3319eb2dd63f9b5d973abb34e7eb63a4fb7e79c",
+        "binary_sha256": "372f5729aed56294c06b5440a5878967370e275e7c7a5ef259646c17ddf6f677",
+        "validation_lines": []
+      },
+      "batch_full_p2_validated": {
+        "returncode": 0,
+        "energy_ry": -808.90861004,
+        "job_done": true,
+        "exx_converged": true,
+        "mpi_ranks": 32,
+        "pools": 2,
+        "variant": "batch",
+        "validate": true,
+        "profiles": {
+          "aceinit": {
+            "cpu_seconds": 56.4,
+            "wall_seconds": 56.56
+          },
+          "addusxx": {
+            "cpu_seconds": 22.33,
+            "wall_seconds": 22.35
+          },
+          "newdxx": {
+            "cpu_seconds": 21.6,
+            "wall_seconds": 21.62
+          },
+          "PAW_newdxx": {
+            "cpu_seconds": 2.31,
+            "wall_seconds": 2.32
+          },
+          "PWSCF": {
+            "cpu_seconds": 74.3,
+            "wall_seconds": 76.24
+          }
+        },
+        "input_sha256": "941e55bd1b737734a5318c9ef3319eb2dd63f9b5d973abb34e7eb63a4fb7e79c",
+        "binary_sha256": "6454fb141032deea948867e2234745e3ab65441d0eba97eac6a76da6e323d7eb",
+        "validation_lines": [
+          "CPU batch validation counts/errors:       60      60   4.3409053E-19   2.0816682E-16",
+          "CPU batch validation counts/errors:       60      60   4.8486995E-19   2.0819573E-16",
+          "CPU batch validation counts/errors:       60      60   4.4702801E-19   1.9869968E-16",
+          "CPU batch validation counts/errors:       60      60   5.4210268E-19   1.9279639E-16",
+          "CPU batch validation counts/errors:       60      60   4.4702801E-19   1.6782945E-16",
+          "CPU batch validation counts/errors:       60      60   4.3558252E-19   1.6667795E-16",
+          "CPU batch validation counts/errors:       60      60   4.3396978E-19   2.5133743E-16",
+          "CPU batch validation counts/errors:       60      60   4.8486995E-19   1.8683544E-16",
+          "CPU batch validation counts/errors:       60      60   4.3452708E-19   1.9478403E-16"
+        ]
+      }
+    }
+  },
+  "batch7_first_ACE_timing": {
+    "MPI_ranks": 32,
+    "pools": 2,
+    "validation": false,
+    "pairs": [
+      {
+        "repeat": 1,
+        "energy_difference_ry": 0.0,
+        "batch": 1.37,
+        "fixed": 5.42
+      },
+      {
+        "repeat": 2,
+        "energy_difference_ry": 0.0,
+        "fixed": 5.42,
+        "batch": 1.36
+      },
+      {
+        "repeat": 3,
+        "energy_difference_ry": 0.0,
+        "batch": 1.35,
+        "fixed": 5.44
+      }
+    ],
+    "median_seconds": {
+      "fixed": 5.42,
+      "batch": 1.36
+    },
+    "speedup": 3.9852941176470584,
+    "scope": "First aceinit WALL time in a small-mesh one-construction timing run"
+  },
+  "block20": {
+    "MPI_ranks": 4,
+    "pools": 2,
+    "full_SCF": {
+      "returncode": 0,
+      "energy_Ry": -808.90861004,
+      "exx_converged": true,
+      "job_done": true,
+      "binary_sha256": "2df73767cd466c4a445879cba1c3e5a66a68fa034cdce65e7b4982b9e5defc43",
+      "validation": true,
+      "validation_lines": [
+        "CPU batch validation counts/errors:       20      20   4.3514407E-19   8.5683399E-16",
+        "CPU batch validation counts/errors:       20      20   4.4702801E-19   8.1161332E-16",
+        "CPU batch validation counts/errors:       20      20   6.1331737E-19   7.8209677E-16",
+        "CPU batch validation counts/errors:       20      20   4.3520472E-19   5.5788017E-16",
+        "CPU batch validation counts/errors:       20      20   5.5283680E-19   1.4435568E-15",
+        "CPU batch validation counts/errors:       20      20   5.4352801E-19   9.5827105E-16",
+        "CPU batch validation counts/errors:       20      20   4.3424673E-19   7.7731292E-16",
+        "CPU batch validation counts/errors:       20      20   4.4702801E-19   1.0408341E-15",
+        "CPU batch validation counts/errors:       20      20   4.4702801E-19   9.8209252E-16"
+      ]
+    },
+    "timing_pairs": [
+      {
+        "repeat": 1,
+        "block7_seconds": 9.17,
+        "block20_seconds": 6.01
+      },
+      {
+        "repeat": 2,
+        "block7_seconds": 9.92,
+        "block20_seconds": 6.16
+      },
+      {
+        "repeat": 3,
+        "block7_seconds": 9.34,
+        "block20_seconds": 5.72
+      }
+    ],
+    "block7_median_seconds": 9.34,
+    "block20_median_seconds": 6.01,
+    "first_ACE_speedup": 1.5540765391014975,
+    "timing_conditions": "Four MPI ranks overlapping the existing Ruby02 allocation during the historical test"
+  },
+  "publication_checks": {
+    "repair_patch_applies": true,
+    "batch_patch_applies": true,
+    "block20_patch_applies": true,
+    "configured_VPATH_patch_check": true,
+    "patched_numerical_sources_match_measured_sources": true,
+    "new_compile_or_SCF_during_publication": false,
+    "Makefile_integration": "New full-source-tree integration; historical numerical tests used private object relinking"
+  }
+}

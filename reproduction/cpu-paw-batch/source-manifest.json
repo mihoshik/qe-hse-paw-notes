@@ -1,0 +1,29 @@
+{
+  "publication_JST": "2026-11-14",
+  "changes_recorded_JST": "2026-11-12",
+  "upstream": "https://github.com/QEF/q-e/tree/qe-7.6",
+  "prerequisite": "../cpu-paw-pool/paw-exx-pool.patch",
+  "base_sha256": {
+    "PW/src/exx_bp.f90": "036d33a858108aca6c83417aec7bec96e184b86f4e3eda071cf074ee2079c235",
+    "Modules/mp_exx.f90": "012fd545051608820db79caa0a57b978e605eb8bd8183e16f9845f961e5ac51a",
+    "PW/src/Makefile": "d1a0357b1ab9a62e5a4f78aa28b11c1059fa887046fcb41786b1d4d9ff7d7559",
+    "PW/src/paw_exx.f90": "ee8bcaac2b18b5e8503ba6107dd8ad7f57b3c9833063811891a5125e2b167177"
+  },
+  "patched_sha256": {
+    "PW/src/exx_bp.f90": "e69b993a864a1d4a68a5fd4f8e4b02f6c618cc4599540bfaf363e10ad342c275",
+    "PW/src/exx_paw_cpu_batch.f90": "f58bcea8034aa7b5278cf02488b232d629d232664d02121012307df274457c83",
+    "PW/src/Makefile": "d2ea673ce89e3a134cffbede54815dee0753cd9bd0ae2010029b6b5491b563e7",
+    "Modules/mp_exx.f90": "a15c0cf27520c83fa3724f37c3aafb8022c96ed83e2c7bb17c3502a5ba926cad"
+  },
+  "files_sha256": {
+    "cpu-paw-batch.patch": "469682b84cf3d2cb7028430e50051612baca8b9ab4a23d52e58299ad599be270",
+    "exx-block20.patch": "132864cd757f312272dbfd12e1875f9e176364108da77aa1bcf7cc41edf3699e",
+    "License": "204d8eff92f95aac4df6c8122bc1505f468f3a901e5a4cc08940e0ede1938994",
+    "README.md": "3feee9e18a1b26b7bb8a14eb46494c641e65f3df6cd95066deafa0e6ea64828e",
+    "validation-summary.json": "2cee4da5496b74a047ee6d404ce6f4be090694f0283e266a756a041e98519f4d"
+  },
+  "known_historical_binaries": {
+    "batch7": "6454fb141032deea948867e2234745e3ab65441d0eba97eac6a76da6e323d7eb",
+    "batch20": "2df73767cd466c4a445879cba1c3e5a66a68fa034cdce65e7b4982b9e5defc43"
+  }
+}
